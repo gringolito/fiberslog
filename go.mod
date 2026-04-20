@@ -5,7 +5,6 @@ go 1.24.0
 require (
 	github.com/gofiber/fiber/v2 v2.52.12
 	github.com/stretchr/testify v1.11.1
-	golang.org/x/exp v0.0.0-20230515195305-f3d0a9c9a5cc
 )
 
 require (

@@ -2,7 +2,7 @@ package fiberslog
 
 import (
 	"github.com/gofiber/fiber/v2"
-	"golang.org/x/exp/slog"
+	"log/slog"
 )
 
 type Config struct {

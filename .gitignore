@@ -24,4 +24,7 @@
 # Go workspace file
 go.work
 
+# Local tracking / planning (not for version control)
+.tracking/
+
 # End of https://www.toptal.com/developers/gitignore/api/go
