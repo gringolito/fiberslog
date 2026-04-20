@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
-	"golang.org/x/exp/slog"
+	"log/slog"
 )
 
 // New returns a fiber.Handler (middleware) that logs requests using slog.
