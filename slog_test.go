@@ -121,6 +121,35 @@ func TestNew_SkipsWhenNextOrSkipURI(t *testing.T) {
 	require.EqualValues(t, 200, (*records)[0].Attrs["status"])
 }
 
+func TestNew_SkipHeaders(t *testing.T) {
+	logger, records := newCaptureLogger()
+
+	app := fiber.New()
+	app.Use(New(Config{
+		Logger:      logger,
+		Fields:      []string{"requestHeaders"},
+		SkipHeaders: []string{"Authorization", "Cookie"},
+	}))
+	app.Get("/", func(c *fiber.Ctx) error { return c.SendStatus(fiber.StatusOK) })
+
+	req := httptest.NewRequest(fiber.MethodGet, "/", nil)
+	req.Header.Set("Authorization", "Bearer secret-token")
+	req.Header.Set("Cookie", "session=abc")
+	req.Header.Set("X-Custom-Header", "present")
+
+	_, err := app.Test(req)
+	require.NoError(t, err)
+	require.Len(t, *records, 1)
+
+	attrs := (*records)[0].Attrs
+	_, hasAuth := attrs["Authorization"]
+	_, hasCookie := attrs["Cookie"]
+	_, hasCustom := attrs["X-Custom-Header"]
+	require.False(t, hasAuth, "Authorization header must be redacted")
+	require.False(t, hasCookie, "Cookie header must be redacted")
+	require.True(t, hasCustom, "X-Custom-Header must be present")
+}
+
 func TestNew_SkipBodyAndSkipResBody(t *testing.T) {
 	logger, records := newCaptureLogger()
 
