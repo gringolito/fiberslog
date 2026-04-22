@@ -2,6 +2,7 @@ package fiberslog
 
 import (
 	"os"
+	"strings"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -21,6 +22,11 @@ func New(config ...Config) fiber.Handler {
 	skipURIs := make(map[string]struct{})
 	for _, uri := range cfg.SkipURIs {
 		skipURIs[uri] = struct{}{}
+	}
+
+	skipHeaders := make(map[string]struct{}, len(cfg.SkipHeaders))
+	for _, h := range cfg.SkipHeaders {
+		skipHeaders[strings.ToLower(h)] = struct{}{}
 	}
 
 	// Return new handler
@@ -119,7 +125,9 @@ func New(config ...Config) fiber.Handler {
 				fields = append(fields, slog.String("requestId", c.GetRespHeader(fiber.HeaderXRequestID)))
 			case "requestHeaders":
 				c.Request().Header.VisitAll(func(k, v []byte) {
-					fields = append(fields, slog.Any(string(k), v))
+					if _, skip := skipHeaders[strings.ToLower(string(k))]; !skip {
+						fields = append(fields, slog.Any(string(k), v))
+					}
 				})
 			}
 

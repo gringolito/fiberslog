@@ -34,13 +34,21 @@ type Config struct {
 
 	// Add custom slog logger.
 	//
-	// Optional. Default: slog.New(slog.NewJSONHandler())
+	// Optional. Default: slog.Default()
 	Logger *slog.Logger
 
 	// Add fields what you want see.
 	//
 	// Optional. Default: {"latency", "status", "method", "url", "pid"}
 	Fields []string
+
+	// SkipHeaders is a list of header names to exclude from requestHeaders logging.
+	// Matching is case-insensitive. Use this to redact sensitive headers such as
+	// Authorization or Cookie.
+	// Warning: if omitted, ALL headers including credentials will be logged.
+	//
+	// Optional. Default: nil
+	SkipHeaders []string
 }
 
 // ConfigDefault is the default config

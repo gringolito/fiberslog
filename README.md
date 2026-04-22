@@ -32,3 +32,16 @@ app.Use(fiberslog.New(fiberslog.Config{
 - URI skip list
 - Conditional body and response body logging
 - Automatic level mapping based on HTTP status code
+
+## Security
+
+**`requestHeaders`** logs all request headers verbatim, including `Authorization`, `Cookie`, and API keys. Use `SkipHeaders` to redact sensitive ones:
+
+```go
+app.Use(fiberslog.New(fiberslog.Config{
+    Fields:      []string{"latency", "status", "method", "requestHeaders"},
+    SkipHeaders: []string{"Authorization", "Cookie"},
+}))
+```
+
+Header name matching is case-insensitive.
