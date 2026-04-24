@@ -50,6 +50,13 @@ func New(config ...Config) fiber.Handler {
 		var logMessage string
 		var logLevel slog.Level
 		statusCode := c.Response().StatusCode()
+		if err != nil {
+			if fiberErr, ok := err.(*fiber.Error); ok {
+				statusCode = fiberErr.Code
+			} else if statusCode < 400 {
+				statusCode = fiber.StatusInternalServerError
+			}
+		}
 		switch {
 		case statusCode >= 500:
 			logLevel = slog.LevelError
