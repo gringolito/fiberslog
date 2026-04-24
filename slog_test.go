@@ -487,6 +487,20 @@ func TestNew_ConcurrentRequests(t *testing.T) {
 	}
 }
 
+func TestNew_UnknownFieldIgnored(t *testing.T) {
+	logger, records := newCaptureLogger()
+
+	app := fiber.New()
+	app.Use(New(Config{Logger: logger, Fields: []string{"nonexistent_field"}}))
+	app.Get("/", func(c *fiber.Ctx) error { return c.SendStatus(fiber.StatusOK) })
+
+	_, err := app.Test(httptest.NewRequest(fiber.MethodGet, "/", nil))
+	require.NoError(t, err)
+
+	require.Len(t, *records, 1)
+	require.Empty(t, (*records)[0].Attrs, "unknown field names must produce no log attrs")
+}
+
 func TestNew_PropagatesNextError(t *testing.T) {
 	tests := []struct {
 		name            string
