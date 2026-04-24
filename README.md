@@ -3,6 +3,7 @@
 [![CI](https://github.com/gringolito/fiberslog/actions/workflows/ci.yaml/badge.svg)](https://github.com/gringolito/fiberslog/actions/workflows/ci.yaml)
 [![Go Reference](https://pkg.go.dev/badge/github.com/gringolito/fiberslog.svg)](https://pkg.go.dev/github.com/gringolito/fiberslog)
 ![Go 1.24+](https://img.shields.io/badge/go-%3E%3D1.24-blue)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 Fiber middleware for structured request logging with `slog`.
 
@@ -88,3 +89,7 @@ Contributions are welcome! Feel free to:
 - [Open an issue](https://github.com/gringolito/fiberslog/issues) to report a bug or request a new feature
 - Submit a pull request — please include tests for any new behavior
 - Suggest ideas or improvements by starting a [discussion](https://github.com/gringolito/fiberslog/discussions)
+
+---
+
+_This project has moved from the Beerware License to MIT, but the spirit lives on: if we ever meet and you think this stuff is worth it, you're still very welcome to buy me a beer._
