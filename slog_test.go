@@ -451,6 +451,42 @@ func TestNew_SkipBodyAndSkipResBody(t *testing.T) {
 	require.False(t, hasResBody)
 }
 
+func TestNew_ConcurrentRequests(t *testing.T) {
+	logger, records := newCaptureLogger()
+
+	app := fiber.New()
+	app.Use(New(Config{
+		Logger: logger,
+		Fields: []string{"status", "method", "pid", "latency", "url"},
+	}))
+	app.Get("/", func(c *fiber.Ctx) error { return c.SendStatus(fiber.StatusOK) })
+
+	const n = 50
+	var wg sync.WaitGroup
+	wg.Add(n)
+	for i := 0; i < n; i++ {
+		go func() {
+			defer wg.Done()
+			resp, reqErr := app.Test(httptest.NewRequest(fiber.MethodGet, "/", nil))
+			if reqErr != nil {
+				t.Errorf("unexpected error: %v", reqErr)
+				return
+			}
+			if resp.StatusCode != fiber.StatusOK {
+				t.Errorf("expected 200, got %d", resp.StatusCode)
+			}
+		}()
+	}
+	wg.Wait()
+
+	require.Len(t, *records, n)
+	for _, rec := range *records {
+		require.EqualValues(t, 200, rec.Attrs["status"])
+		require.Equal(t, "GET", rec.Attrs["method"])
+		require.Positive(t, rec.Attrs["pid"])
+	}
+}
+
 func TestNew_PropagatesNextError(t *testing.T) {
 	tests := []struct {
 		name            string
