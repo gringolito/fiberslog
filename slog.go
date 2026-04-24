@@ -136,6 +136,12 @@ func New(config ...Config) fiber.Handler {
 						fields = append(fields, slog.Any(string(k), v))
 					}
 				})
+			case "responseHeaders":
+				c.Response().Header.VisitAll(func(k, v []byte) {
+					if _, skip := skipHeaders[strings.ToLower(string(k))]; !skip {
+						fields = append(fields, slog.Any(string(k), v))
+					}
+				})
 			}
 
 		}

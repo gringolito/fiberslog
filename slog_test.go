@@ -153,6 +153,35 @@ func TestNew_SkipHeaders(t *testing.T) {
 	require.True(t, hasCustom, "X-Custom-Header must be present")
 }
 
+func TestNew_SkipResponseHeaders(t *testing.T) {
+	logger, records := newCaptureLogger()
+
+	app := fiber.New()
+	app.Use(New(Config{
+		Logger:      logger,
+		Fields:      []string{"responseHeaders"},
+		SkipHeaders: []string{"X-Secret", "X-Internal"},
+	}))
+	app.Get("/", func(c *fiber.Ctx) error {
+		c.Set("X-Secret", "hidden")
+		c.Set("X-Internal", "also-hidden")
+		c.Set("X-Public", "visible")
+		return c.SendStatus(fiber.StatusOK)
+	})
+
+	_, err := app.Test(httptest.NewRequest(fiber.MethodGet, "/", nil))
+	require.NoError(t, err)
+	require.Len(t, *records, 1)
+
+	attrs := (*records)[0].Attrs
+	_, hasSecret := attrs["X-Secret"]
+	_, hasInternal := attrs["X-Internal"]
+	_, hasPublic := attrs["X-Public"]
+	require.False(t, hasSecret, "X-Secret response header must be redacted")
+	require.False(t, hasInternal, "X-Internal response header must be redacted")
+	require.True(t, hasPublic, "X-Public response header must be present")
+}
+
 func TestNew_LogFields(t *testing.T) {
 	defaultHandler := func(c *fiber.Ctx) error {
 		return c.SendStatus(fiber.StatusOK)
@@ -386,6 +415,19 @@ func TestNew_LogFields(t *testing.T) {
 			},
 			assert: func(t *testing.T, attrs map[string]any) {
 				require.EqualValues(t, 5, attrs["bytesSent"])
+			},
+		},
+		{
+			name:  "responseHeaders",
+			field: "responseHeaders",
+			handler: func(c *fiber.Ctx) error {
+				c.Set("X-Response-Header", "resp-value")
+				return c.SendStatus(fiber.StatusOK)
+			},
+			assert: func(t *testing.T, attrs map[string]any) {
+				v, ok := attrs["X-Response-Header"]
+				require.True(t, ok, "X-Response-Header must be present in log attrs")
+				require.Equal(t, []byte("resp-value"), v)
 			},
 		},
 	}
