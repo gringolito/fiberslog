@@ -67,6 +67,38 @@ func TestConfigDefault(t *testing.T) {
 	require.Equal(t, []string{"latency", "status", "method", "url", "pid"}, cfg.Fields)
 }
 
+func TestConfigDefault_MutationSafety(t *testing.T) {
+	cfg1 := configDefault()
+	cfg1.Fields[0] = "tampered"
+
+	cfg2 := configDefault()
+	require.Equal(t, []string{"latency", "status", "method", "url", "pid"}, cfg2.Fields,
+		"mutating a returned config must not affect subsequent configDefault() calls")
+}
+
+func TestConfigDefault_NilLoggerFallsBackToDefault(t *testing.T) {
+	cfg := configDefault(Config{Fields: []string{"status"}})
+	require.NotNil(t, cfg.Logger)
+	require.Equal(t, []string{"status"}, cfg.Fields)
+}
+
+func TestConfigDefault_NilFieldsFallsBackToDefault(t *testing.T) {
+	logger, _ := newCaptureLogger()
+	cfg := configDefault(Config{Logger: logger})
+	require.Equal(t, logger, cfg.Logger)
+	require.Equal(t, []string{"latency", "status", "method", "url", "pid"}, cfg.Fields)
+}
+
+func TestConfigDefault_NilFieldsMutationSafety(t *testing.T) {
+	logger, _ := newCaptureLogger()
+	cfg1 := configDefault(Config{Logger: logger})
+	cfg1.Fields[0] = "tampered"
+
+	cfg2 := configDefault(Config{Logger: logger})
+	require.Equal(t, []string{"latency", "status", "method", "url", "pid"}, cfg2.Fields,
+		"mutating Fields from a nil-Fields config must not affect subsequent calls")
+}
+
 func TestNew_LogsExpectedSeverityByStatusCode(t *testing.T) {
 	logger, records := newCaptureLogger()
 
