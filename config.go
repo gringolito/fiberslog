@@ -51,29 +51,26 @@ type Config struct {
 	SkipHeaders []string
 }
 
-// ConfigDefault is the default config
-var ConfigDefault = Config{
+var defaultConfig = Config{
 	Logger: slog.Default(),
 	Fields: []string{"latency", "status", "method", "url", "pid"},
 }
 
-// Helper function to set default values
 func configDefault(config ...Config) Config {
-	// Return default config if nothing provided
 	if len(config) < 1 {
-		return ConfigDefault
+		cfg := defaultConfig
+		cfg.Fields = append([]string(nil), defaultConfig.Fields...)
+		return cfg
 	}
 
-	// Override default config
 	cfg := config[0]
 
-	// Set default values
 	if cfg.Logger == nil {
-		cfg.Logger = ConfigDefault.Logger
+		cfg.Logger = defaultConfig.Logger
 	}
 
 	if cfg.Fields == nil {
-		cfg.Fields = ConfigDefault.Fields
+		cfg.Fields = append([]string(nil), defaultConfig.Fields...)
 	}
 
 	return cfg
