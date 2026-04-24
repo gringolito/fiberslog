@@ -1,6 +1,8 @@
 # fiberslog
 
 [![CI](https://github.com/gringolito/fiberslog/actions/workflows/ci.yaml/badge.svg)](https://github.com/gringolito/fiberslog/actions/workflows/ci.yaml)
+[![CodeQL](https://github.com/gringolito/fiberslog/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/gringolito/fiberslog/actions/workflows/github-code-scanning/codeql)
+[![codecov](https://codecov.io/gh/gringolito/fiberslog/branch/master/graph/badge.svg)](https://codecov.io/gh/gringolito/fiberslog)
 [![Go Reference](https://pkg.go.dev/badge/github.com/gringolito/fiberslog.svg)](https://pkg.go.dev/github.com/gringolito/fiberslog)
 ![Go 1.24+](https://img.shields.io/badge/go-%3E%3D1.24-blue)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
