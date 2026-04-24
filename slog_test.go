@@ -450,3 +450,64 @@ func TestNew_SkipBodyAndSkipResBody(t *testing.T) {
 	require.False(t, hasBody)
 	require.False(t, hasResBody)
 }
+
+func TestNew_PropagatesNextError(t *testing.T) {
+	tests := []struct {
+		name            string
+		handlerErr      error
+		expectedStatus  int
+		expectedLevel   slog.Level
+		expectedMsg     string
+		expectedErrAttr string
+	}{
+		{
+			name:            "bad_request",
+			handlerErr:      fiber.ErrBadRequest,
+			expectedStatus:  fiber.StatusBadRequest,
+			expectedLevel:   slog.LevelWarn,
+			expectedMsg:     "Client error",
+			expectedErrAttr: "Bad Request",
+		},
+		{
+			name:            "not_found",
+			handlerErr:      fiber.ErrNotFound,
+			expectedStatus:  fiber.StatusNotFound,
+			expectedLevel:   slog.LevelWarn,
+			expectedMsg:     "Client error",
+			expectedErrAttr: "Not Found",
+		},
+		{
+			name:            "internal_server_error",
+			handlerErr:      fiber.ErrInternalServerError,
+			expectedStatus:  fiber.StatusInternalServerError,
+			expectedLevel:   slog.LevelError,
+			expectedMsg:     "Server error",
+			expectedErrAttr: "Internal Server Error",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			logger, records := newCaptureLogger()
+
+			app := fiber.New()
+			app.Use(New(Config{Logger: logger, Fields: []string{"status"}}))
+			app.Get("/", func(c *fiber.Ctx) error {
+				return tt.handlerErr
+			})
+
+			resp, err := app.Test(httptest.NewRequest(fiber.MethodGet, "/", nil))
+			require.NoError(t, err)
+			require.Equal(t, tt.expectedStatus, resp.StatusCode)
+
+			require.Len(t, *records, 1)
+			rec := (*records)[0]
+			require.Equal(t, tt.expectedLevel, rec.Level)
+			require.Equal(t, tt.expectedMsg, rec.Msg)
+
+			errAttr, ok := rec.Attrs["error"]
+			require.True(t, ok, "log record must contain 'error' attribute")
+			require.Equal(t, tt.expectedErrAttr, errAttr)
+		})
+	}
+}
