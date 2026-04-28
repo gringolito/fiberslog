@@ -5,6 +5,7 @@ import (
 	"log/slog"
 )
 
+// Config holds the configuration options for the fiberslog middleware.
 type Config struct {
 	// Next defines a function to skip this middleware when returned true.
 	//
